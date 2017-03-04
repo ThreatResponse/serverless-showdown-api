@@ -1,3 +1,4 @@
 flask
 request
 flask_restful
+boto3
