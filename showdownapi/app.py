@@ -1,6 +1,8 @@
 import os
 import boto3
 import uuid
+import StringIO
+import gzip
 from flask import Flask, request
 from flask_restful import Resource, Api
 
@@ -15,12 +17,19 @@ class EventToDisk():
     def __init__(self):
         self.client = boto3.client('s3')
 
+    def __gzip(self, contents):
+        out = StringIO.StringIO()
+        with gzip.GzipFile(fileobj=out, mode="w") as f:
+            f.write(contents)
+        return out.getvalue()
+
     def to_s3(self, contents):
         """Puts contents of a post to s3."""
+        payload = self.__gzip(str(contents))
         response = self.client.put_object(
             ACL='private',
-            Key="{id}.json".format(id=uuid.uuid4().hex),
-            Body=str(contents),
+            Key="{id}.json.gz".format(id=uuid.uuid4().hex),
+            Body=str(payload),
             Bucket=s3_bucket
         )
     pass
@@ -43,4 +52,4 @@ class ServerlessProfile(Resource):
 api.add_resource(ServerlessProfile, '/')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=8000)
