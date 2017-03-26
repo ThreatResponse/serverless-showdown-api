@@ -1,0 +1,7 @@
+{
+  "manage_iam_role": "false", 
+  "iam_role_arn": "arn:aws:iam::576309420438:role/serverless-api-role", 
+  "lambda_arn": "arn:aws:lambda:us-west-2:576309420438:function:showdown-api", 
+  "app_name": "showdown-api", 
+  "stage": "dev"
+}

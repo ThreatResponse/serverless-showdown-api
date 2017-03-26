@@ -3,11 +3,11 @@ import boto3
 import uuid
 import StringIO
 import gzip
-from flask import Flask, request
-from flask_restful import Resource, Api
 
-app = Flask(__name__)
-api = Api(app)
+from chalice import Chalice
+
+app = Chalice(app_name='showdown-api')
+app.debug = True
 
 s3_bucket = os.environ["S3_BUCKET"]
 
@@ -35,21 +35,14 @@ class EventToDisk():
     pass
 
 
-class ServerlessProfile(Resource):
-    def post(self):
-        try:
-            data = request.json
-            e = EventToDisk()
-            e.to_s3(data)
-            return {'result': 'stored'}, 200
-        except:
-            return {'result': 'could not process payload'}, 500
+@app.route('/', methods=['POST', 'GET'])
+def index():
+    print app.current_request.method
+    if app.current_request.method == 'POST':
+        data = app.current_request.raw_body
+        e = EventToDisk()
+        e.to_s3(data)
+        return {'result': 'stored'}, 200
 
-    def get(self):
+    else:
         return {'result': 'not supported'}, 200
-
-
-api.add_resource(ServerlessProfile, '/')
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000)
